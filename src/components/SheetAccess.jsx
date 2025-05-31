@@ -8,6 +8,7 @@ const SheetsAccess = ({ accessToken, userInfo, resetForm, toggleReset }) => {
   const ageRef = useRef(null);
   const genderRef = useRef(null);
   const addressRef = useRef(null);
+  const [amount, setamount] = useState(100);
 
   const resetFormFields = () => {
     mobileRef.current.value = null;
@@ -51,8 +52,6 @@ const SheetsAccess = ({ accessToken, userInfo, resetForm, toggleReset }) => {
       }
     }
   };
-
-  const [amount, setamount] = useState(350);
 
   // handlePayment Function
   const handlePayment = async (payload) => {
