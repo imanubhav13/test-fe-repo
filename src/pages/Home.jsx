@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import SheetsAccess from "../components/SheetAccess";
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-const SCOPE = "https://www.googleapis.com/auth/spreadsheets";
+const SCOPE =
+  "https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email";
 
 const Login = () => {
   const [user, setUser] = useState(() => {
@@ -45,6 +46,24 @@ const Login = () => {
     setResetForm(!resetForm);
   };
 
+  const resetGoogleSession = () => {
+    setUser(null);
+    setAccessToken(null);
+    localStorage.removeItem("google_user");
+    localStorage.removeItem("google_access_token");
+
+    tokenClientRef.current = window.google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: SCOPE,
+      callback: (tokenResponse) => {
+        const token = tokenResponse.access_token;
+        setAccessToken(token);
+        localStorage.setItem("google_access_token", token);
+        getUserInfo(token);
+      },
+    });
+  };
+
   useEffect(() => {
     const waitForGoogle = setInterval(() => {
       if (window.google) {
@@ -53,6 +72,7 @@ const Login = () => {
         tokenClientRef.current = window.google.accounts.oauth2.initTokenClient({
           client_id: CLIENT_ID,
           scope: SCOPE,
+          prompt: "consent select_account",
           callback: (tokenResponse) => {
             const token = tokenResponse.access_token;
             // console.log("Access Token:", token);
@@ -104,7 +124,7 @@ const Login = () => {
             </button>
           </>
         ) : (
-          <div className="flex flex-col lg:flex-row gap-8 text-left">
+          <div className="flex flex-col xl:flex-row gap-8 text-left">
             {/* Left section */}
             <div className="flex flex-col gap-4 lg:min-w-[200px]">
               <div className="flex flex-row justify-between items-center">
@@ -120,12 +140,7 @@ const Login = () => {
                   </span>
                   <span
                     className="w-fit underline rounded-lg font-semibold cursor-pointer transition hover:text-primary"
-                    onClick={() => {
-                      setUser(null);
-                      setAccessToken(null);
-                      localStorage.removeItem("google_user");
-                      localStorage.removeItem("google_access_token");
-                    }}
+                    onClick={resetGoogleSession}
                   >
                     Use different email
                   </span>
